@@ -1,0 +1,113 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  SkillId:
+    Type: String
+  LambdaRuntime:
+    Type: String
+  LambdaHandler:
+    Type: String
+  CodeBucket:
+    Type: String
+  CodeKey:
+    Type: String
+  CodeVersion:
+    Type: String
+  JokesBucketName:
+    Type: String
+    Default: 'alexa-jokes-bucket'
+Resources:
+  AlexaJokesBucket:
+      Type: 'AWS::S3::Bucket'
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
+      Properties:
+        BucketName: !Ref JokesBucketName
+  AlexaJokerSkillIAMRole:
+      Type: AWS::IAM::Role
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Path: /
+        Policies:
+          - PolicyName: alexaSkillExecutionPolicy
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:*
+                  Resource: arn:aws:logs:*:*:*
+          - PolicyName: JokesBucketPolicy
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:*
+                  Resource: !GetAtt AlexaJokesBucket.Arn
+          - PolicyName: JokeObjectsPolicy
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:*
+                  Resource: !Join ['/', [!GetAtt AlexaJokesBucket.Arn, '*']]
+          - PolicyName: SynthesizeSpeechPolicy
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - polly:StartSpeechSynthesisTask
+                    - polly:SynthesizeSpeech
+                  Resource: '*'
+  AlexaJokerSkillFunction:
+    Type: AWS::Lambda::Function
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      Environment:
+        Variables:
+          S3_PERSISTENCE_BUCKET: !Ref JokesBucketName
+      Code:
+        S3Bucket: !Ref CodeBucket
+        S3Key: !Ref CodeKey
+        S3ObjectVersion: !Ref CodeVersion
+      Handler: !Ref LambdaHandler
+      Runtime: !Ref LambdaRuntime
+      Role: !GetAtt AlexaJokerSkillIAMRole.Arn
+      MemorySize: 512
+      Timeout: 60
+  AlexaJokerSkillFunctionEventPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:invokeFunction
+      FunctionName: !GetAtt AlexaJokerSkillFunction.Arn
+      Principal: alexa-appkit.amazon.com
+      EventSourceToken: !Ref SkillId
+  AlexaSkillFunctionEventPermissionSmartHome:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:invokeFunction
+      FunctionName: !GetAtt AlexaJokerSkillFunction.Arn
+      Principal: alexa-connectedhome.amazon.com
+      EventSourceToken: !Ref SkillId
+  AlexaJokerSkillFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AlexaJokerSkillFunction}
+      RetentionInDays: 14
+Outputs:
+  SkillEndpoint:
+    Description: LambdaARN for the regional endpoint
+    Value: !GetAtt AlexaJokerSkillFunction.Arn

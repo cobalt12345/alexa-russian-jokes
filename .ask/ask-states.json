@@ -1,0 +1,36 @@
+{
+  "askcliStatesVersion": "2020-03-31",
+  "profiles": {
+    "default": {
+      "skillId": "amzn1.ask.skill.cd2704b1-0dad-465c-8728-a93eff36c34a",
+      "skillInfrastructure": {
+        "@ask-cli/cfn-deployer": {
+          "deployState": {
+            "default": {
+              "s3": {
+                "bucket": "ask-alexa-russian-jokes-default-eucentral1-1637708855964",
+                "key": "endpoint/build.zip"
+              },
+              "stackId": "arn:aws:cloudformation:eu-central-1:785668202743:stack/ask-alexa-russian-jokes-default-skillStack-1637708855964/2882c070-4cb2-11ec-ad63-0a0093447fa4",
+              "outputs": [
+                {
+                  "OutputKey": "SkillEndpoint",
+                  "OutputValue": "arn:aws:lambda:eu-central-1:785668202743:function:ask-alexa-russian-jokes-de-AlexaJokerSkillFunction-IVx7u2VHw2Ok",
+                  "Description": "LambdaARN for the regional endpoint"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "skillMetadata": {
+        "lastDeployHash": "k8VYVz/zlb0ryrT6An5qgqGt8YQ="
+      },
+      "code": {
+        "default": {
+          "lastDeployHash": "7MIS6/c2LAD3updlxylzxfYzKBo="
+        }
+      }
+    }
+  }
+}
