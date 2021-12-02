@@ -11,11 +11,11 @@
                 "bucket": "ask-alexa-russian-jokes-default-eucentral1-1637708855964",
                 "key": "endpoint/build.zip"
               },
-              "stackId": "arn:aws:cloudformation:eu-central-1:785668202743:stack/ask-alexa-russian-jokes-default-skillStack-1637708855964/2882c070-4cb2-11ec-ad63-0a0093447fa4",
+              "stackId": "arn:aws:cloudformation:eu-central-1:785668202743:stack/ask-RussianJokes-default-skillStack-1638462759588/8b83af40-538d-11ec-9279-06385ec0e374",
               "outputs": [
                 {
                   "OutputKey": "SkillEndpoint",
-                  "OutputValue": "arn:aws:lambda:eu-central-1:785668202743:function:ask-alexa-russian-jokes-de-AlexaJokerSkillFunction-IVx7u2VHw2Ok",
+                  "OutputValue": "arn:aws:lambda:eu-central-1:785668202743:function:ask-RussianJokes-default-s-AlexaJokerSkillFunction-ZIGp8F6R2O2u",
                   "Description": "LambdaARN for the regional endpoint"
                 }
               ]
@@ -24,11 +24,11 @@
         }
       },
       "skillMetadata": {
-        "lastDeployHash": "k8VYVz/zlb0ryrT6An5qgqGt8YQ="
+        "lastDeployHash": "TEcktVtZZxWcpvqEFja31+HVYK4="
       },
       "code": {
         "default": {
-          "lastDeployHash": "7MIS6/c2LAD3updlxylzxfYzKBo="
+          "lastDeployHash": "+wnASGDP+U+BpNkT6F7MSD92yJI="
         }
       }
     }

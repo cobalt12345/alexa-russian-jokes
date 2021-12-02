@@ -139,7 +139,7 @@ function getRandomInt(min, max) {
 
 async function text2Speech(jokeText) {
     console.debug('Transcode joke: ', jokeText);
-    const client = new PollyClient({region: 'eu-central-1'});
+    const client = new PollyClient({region: 'eu-west-1'});
     const command = new StartSpeechSynthesisTaskCommand({
         Engine: 'standard',
         OutputFormat: 'mp3',

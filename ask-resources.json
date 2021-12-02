@@ -13,7 +13,7 @@
       "skillInfrastructure": {
         "type": "@ask-cli/cfn-deployer",
         "userConfig": {
-          "runtime": "nodejs12.x",
+          "runtime": "nodejs14.x",
           "handler": "index.handler",
           "templatePath": "./infrastructure/cfn-deployer/skill-stack.yaml",
           "awsRegion": "eu-central-1"

@@ -3,7 +3,7 @@
     "apis": {
       "custom": {
         "endpoint": {
-          "uri": "arn:aws:lambda:eu-central-1:785668202743:function:ask-alexa-russian-jokes-de-AlexaJokerSkillFunction-IVx7u2VHw2Ok"
+          "uri": "arn:aws:lambda:eu-central-1:785668202743:function:ask-RussianJokes-default-s-AlexaJokerSkillFunction-ZIGp8F6R2O2u"
         }
       }
     },
