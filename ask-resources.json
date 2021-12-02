@@ -16,7 +16,7 @@
           "runtime": "nodejs14.x",
           "handler": "index.handler",
           "templatePath": "./infrastructure/cfn-deployer/skill-stack.yaml",
-          "awsRegion": "eu-central-1"
+          "awsRegion": "eu-west-1"
         }
       }
     }

@@ -2,33 +2,9 @@
   "askcliStatesVersion": "2020-03-31",
   "profiles": {
     "default": {
-      "skillId": "amzn1.ask.skill.cd2704b1-0dad-465c-8728-a93eff36c34a",
       "skillInfrastructure": {
-        "@ask-cli/cfn-deployer": {
-          "deployState": {
-            "default": {
-              "s3": {
-                "bucket": "ask-alexa-russian-jokes-default-eucentral1-1637708855964",
-                "key": "endpoint/build.zip"
-              },
-              "stackId": "arn:aws:cloudformation:eu-central-1:785668202743:stack/ask-RussianJokes-default-skillStack-1638462759588/8b83af40-538d-11ec-9279-06385ec0e374",
-              "outputs": [
-                {
-                  "OutputKey": "SkillEndpoint",
-                  "OutputValue": "arn:aws:lambda:eu-central-1:785668202743:function:ask-RussianJokes-default-s-AlexaJokerSkillFunction-ZIGp8F6R2O2u",
-                  "Description": "LambdaARN for the regional endpoint"
-                }
-              ]
-            }
-          }
-        }
-      },
-      "skillMetadata": {
-        "lastDeployHash": "TEcktVtZZxWcpvqEFja31+HVYK4="
-      },
-      "code": {
-        "default": {
-          "lastDeployHash": "+wnASGDP+U+BpNkT6F7MSD92yJI="
+        "@ask-cli/lambda-deployer": {
+          "deployState": {}
         }
       }
     }
