@@ -2,6 +2,9 @@
   "manifest": {
     "apis": {
       "custom": {
+        "endpoint": {
+          "uri": "arn:aws:lambda:eu-central-1:785668202743:function:ask-RussianJokes-default-s-AlexaJokerSkillFunction-fMWqlfVWi1xL"
+        }
       }
     },
     "manifestVersion": "1.0",
@@ -11,17 +14,27 @@
       "isAvailableWorldwide": true,
       "locales": {
         "en-US": {
-          "description": "Want to get a new joke?",
+          "description": "Alexa tells jokes in Russian language.",
           "examplePhrases": [
-            "Alexa open Russian jokes"
+            "Alexa, open Russian jokes"
           ],
           "largeIconUri": "file://assets/en-US_largeIcon.png",
           "name": "Russian Jokes",
           "smallIconUri": "file://assets/en-US_smallIcon.png",
-          "summary": "Russian Jokes"
+          "summary": "Do you want to listen jokes in Russian language? This skill is for you!"
+        },
+        "de-DE": {
+          "description": "Alexa erzählt Witze in russischer Sprache.",
+          "examplePhrases": [
+            "Alexa, öffne russische Witze"
+          ],
+          "largeIconUri": "file://assets/en-US_largeIcon.png",
+          "name": "Russische Witze",
+          "smallIconUri": "file://assets/en-US_smallIcon.png",
+          "summary": "Möchten Sie Witze in russischer Sprache hören? Diese Fähigkeit ist für Sie!"
         }
       },
-      "testingInstructions": "Simply buy and try!"
+      "testingInstructions": "Simply say 'Alexa, open Russian jokes' and enjoy Russian jokes."
     }
   }
 }

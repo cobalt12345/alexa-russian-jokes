@@ -1,7 +1,7 @@
 {
     "interactionModel": {
         "languageModel": {
-            "invocationName": "russian jokes",
+            "invocationName": "russische witze",
             "intents": [
                 {
                     "name": "AMAZON.CancelIntent",
@@ -24,20 +24,20 @@
                         }
                     ],
                     "samples": [
-                        "i prefer {contentType}",
-                        "i like {contentType}",
-                        "i would like to listen {contentType}",
-                        "tell me {contentType}"
+                        "ich bevorzuge {contentType}",
+                        "ich mag {contentType}",
+                        "ich möchte zuhören {contentType}",
+                        "sag mir {contentType}"
                     ]
                 },
                 {
                     "name": "NextJokeIntent",
                     "slots": [],
                     "samples": [
-                        "next",
-                        "next joke",
-                        "more",
-                        "one more joke"
+                        "nächste",
+                        "nächster Witz",
+                        "mehr",
+                        "noch ein Witz"
                     ]
                 },
                 {
@@ -49,28 +49,28 @@
                 {
                     "values": [
                         {
-                            "id": "ANECDOTES",
+                            "id": "ANECDOTS",
                             "name": {
-                                "value": "anecdotes",
+                                "value": "Anekdoten",
                                 "synonyms": [
-                                    "anecdote",
-                                    "joke"
+                                    "Anekdote",
+                                    "Scherz"
                                 ]
                             }
                         },
                         {
                             "id": "APHORISMS",
                             "name": {
-                                "value": "aphorisms",
-                                "synonyms": []
+                                "value": "Aphorismen",
+                                "synonyms": ["Aphorism"]
                             }
                         },
                         {
                             "id": "ADULTS",
                             "name": {
-                                "value": "adults",
+                                "value": "Erwachsene",
                                 "synonyms": [
-                                    "adult jokes"
+                                    "Witze für Erwachsene"
                                 ]
                             }
                         }
@@ -80,5 +80,5 @@
             ]
         }
     }
-  }
+}
   
