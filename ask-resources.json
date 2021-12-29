@@ -20,7 +20,7 @@
           "cfn": {
             "parameters": {
               "JokesBucketName": "alexa-jokes-bucket",
-              "JokeAudioUrlExpirationTimeInMinutes": 2,
+              "JokeAudioUrlExpirationTimeInMinutes": "2",
               "JokesSupplierUrl": "http://rzhunemogu.ru/RandJSON.aspx"
             }
           }

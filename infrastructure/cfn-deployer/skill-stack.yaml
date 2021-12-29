@@ -16,7 +16,7 @@ Parameters:
     Type: String
     Description: 'Bucket for saving a funny stuff (jokes, anecdotes etc.)'
   JokeAudioUrlExpirationTimeInMinutes:
-    Type: Number
+    Type: String
     Description: 'Audio file Url expires in the specified number of minutes.'
   JokesSupplierUrl:
     Type: String
