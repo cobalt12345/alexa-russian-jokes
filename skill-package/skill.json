@@ -2,16 +2,13 @@
   "manifest": {
     "apis": {
       "custom": {
-        "endpoint": {
-          "uri": "arn:aws:lambda:eu-central-1:785668202743:function:ask-RussianJokes-default-s-AlexaJokerSkillFunction-fMWqlfVWi1xL"
-        }
       }
     },
     "manifestVersion": "1.0",
     "publishingInformation": {
       "category": "GAMES",
-      "distributionCountries": [],
-      "isAvailableWorldwide": true,
+      "distributionCountries": ["US", "GB", "DE"],
+      "isAvailableWorldwide": false,
       "locales": {
         "en-US": {
           "description": "Alexa tells jokes in Russian language.",
@@ -34,7 +31,7 @@
           "summary": "Möchten Sie Witze in russischer Sprache hören? Diese Fähigkeit ist für Sie!"
         }
       },
-      "testingInstructions": "Simply say 'Alexa, open Russian jokes' and enjoy Russian jokes."
+      "testingInstructions": "Simply say 'Alexa, open Russian jokes' and enjoy jokes from Mother-Russia."
     }
   }
 }

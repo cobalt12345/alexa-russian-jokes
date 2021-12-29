@@ -14,7 +14,13 @@ Parameters:
     Type: String
   JokesBucketName:
     Type: String
-    Default: 'alexa-jokes-bucket'
+    Description: 'Bucket for saving a funny stuff (jokes, anecdotes etc.)'
+  JokeAudioUrlExpirationTimeInMinutes:
+    Type: Number
+    Description: 'Audio file Url expires in the specified number of minutes.'
+  JokesSupplierUrl:
+    Type: String
+    Description: 'Site that provides a funny stuff in the text format.'
 Resources:
   AlexaJokesBucket:
       Type: 'AWS::S3::Bucket'
@@ -79,6 +85,8 @@ Resources:
       Environment:
         Variables:
           S3_PERSISTENCE_BUCKET: !Ref JokesBucketName
+          PRE_SIGNED_URL_EXPIRES_IN_MINUTES: !Ref JokeAudioUrlExpirationTimeInMinutes
+          JOKES_URL: !Ref JokesSupplierUrl
       Code:
         S3Bucket: !Ref CodeBucket
         S3Key: !Ref CodeKey
@@ -112,7 +120,7 @@ Resources:
     UpdateReplacePolicy: Delete
     Properties:
       LogGroupName: !Sub /aws/lambda/${AlexaJokerSkillFunction}
-      RetentionInDays: 14
+      RetentionInDays: 1
 Outputs:
   SkillEndpoint:
     Description: LambdaARN for the regional endpoint

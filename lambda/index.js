@@ -11,15 +11,19 @@ const {getS3PreSignedUrl, LocalizationInterceptor, getNewJoke} = require('./util
 
 
 const ContentType = {
-    'ANECDOTS': 1,
+    'ANECDOTES': 1,
     'APHORISMS': 4,
     'ADULTS': 11
 }
 
 const PersistAttributes = {
-    jokes: [],
+    jokes: {
+        [ContentType.ANECDOTES]: [],
+        [ContentType.APHORISMS]: [],
+        [ContentType.ADULTS]: []
+    },
     skillCalledFirstTime: true,
-    //1 - anekdots, 2 - aphorisms, 3 - adults content
+    //1 - anecdotes, 2 - aphorisms, 3 - adults content
     contentType: 1
 };
 
@@ -216,17 +220,22 @@ const InitJokes = {
             const attributesManager = handlerInput.attributesManager;
             let persistentAttributes = await attributesManager.getPersistentAttributes(true, PersistAttributes);
             if (persistentAttributes.skillCalledFirstTime) {
-                console.debug('First skill run... Get several jokes async.');
-                var getNumOfJokes = 10;
-                while(getNumOfJokes-- > 0) {
-                   getNewJoke(persistentAttributes.jokes, persistentAttributes.contentType).then(() => {
-                       attributesManager.setPersistentAttributes(persistentAttributes);
-                       attributesManager.savePersistentAttributes().then(() => console.log('Attributes persisted'),
-                           reason => console.error('Persist attributes failed', reason)).catch(console.error);
-                   }).catch(console.warn);
+                for (let contentType in ContentType) {
+                    const contentTypeNum = ContentType[contentType];
+                    var getNumOfJokes = 5;
+                    console.log(`Get ${getNumOfJokes} jokes of kind ${contentType}(${contentTypeNum})`);
+                    while (getNumOfJokes-- > 0) {
+                        getNewJoke(persistentAttributes.jokes[contentTypeNum], contentTypeNum).then(() => {
+                            attributesManager.setPersistentAttributes(persistentAttributes);
+                            attributesManager.savePersistentAttributes().then(() => console.log('Attributes persisted'),
+                                reason => console.error('Persist attributes failed', reason)).catch(console.error);
+                        }).catch(console.warn);
+                    }
                 }
             } else {
-                await getNewJoke(persistentAttributes.jokes);
+                await getNewJoke(persistentAttributes.jokes[persistentAttributes.contentType],
+                    persistentAttributes.contentType);
+
                 attributesManager.setPersistentAttributes(persistentAttributes);
                 attributesManager.savePersistentAttributes().then(() => console.log('Attributes persisted'),
                     reason => console.error('Persist attributes failed', reason)).catch(console.error);
@@ -234,13 +243,14 @@ const InitJokes = {
 
 
             const RandomJoke = {
-                nextJoke: !persistentAttributes.skillCalledFirstTime && persistentAttributes.jokes.length > 1 ?
-                    getRandomJoke(persistentAttributes.jokes) :
-                    (()=>{
-                        console.log('First joke - audio probably not yet ready.');
+                nextJoke: !persistentAttributes.skillCalledFirstTime
+                    && persistentAttributes.jokes[persistentAttributes.contentType].length > 1 ?
+                        getRandomJoke(persistentAttributes.jokes[persistentAttributes.contentType]) :
+                            (()=>{
+                                console.log('First joke - audio probably not yet ready.');
 
-                        return null;
-                    })()
+                                return null;
+                            })()
             };
             console.log('Random joke:', RandomJoke);
             attributesManager.setRequestAttributes(RandomJoke);

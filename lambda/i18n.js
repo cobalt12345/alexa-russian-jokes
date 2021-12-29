@@ -6,16 +6,16 @@ module.exports = {
             ERROR_MSG_DONT_KNOW_JOKES: 'I don\'t know any jokes.',
             ERROR_MSG_HA_HA_HA: 'Ha-ha-ha...',
             ERROR_MSG_SERIOUS_RUSSIANS: 'Russians are too serious to joke!',
-            MESSAGE_HELP: 'You can choose to receive anecdotes, aphorisms, or adults jokes. What do you prefer?',
+            MESSAGE_HELP: 'You can choose to receive anecdotes, aphorisms, or adult jokes. What do you prefer?',
             MESSAGE_GOODBYE: 'Goodbye!',
             ERROR_MSG_TRY_LATER: `Sorry, I had trouble doing what you asked. Please try again.`,
             MESSAGE_WELCOME: 'Welcome, choose what kind of funny stuff do you prefer? Anecdotes, ' +
-                'aphorisms, or adults jokes?',
+                'aphorisms, or adult jokes?',
 
             MESSAGE_CHOSEN_CONTENT_TYPE: 'From this moment, I am going to tell you {{contentType}}.',
             CONTENT_TYPE_ANECDOTES: 'anecdotes',
             CONTENT_TYPE_APHORISMS: 'aphorisms',
-            CONTENT_TYPE_ADULTS: 'adults jokes'
+            CONTENT_TYPE_ADULTS: 'adult jokes'
         }
     },
     de: {

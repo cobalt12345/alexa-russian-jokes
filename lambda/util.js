@@ -17,7 +17,7 @@ module.exports.getS3PreSignedUrl = function getS3PreSignedUrl(s3ObjectKey) {
     const s3PreSignedUrl = s3SigV4Client.getSignedUrl('getObject', {
         Bucket: bucketName,
         Key: s3ObjectKey,
-        Expires: 600000 //minutes
+        Expires: process.env.PRE_SIGNED_URL_EXPIRES_IN_MINUTES * 60 //seconds
     });
     console.log(`Util.s3PreSignedUrl: ${s3PreSignedUrl} Object key: ${s3ObjectKey}`);
 
@@ -29,7 +29,7 @@ async function getFunnyContent (contentType = '1') {
     axios.defaults.headers.get['Accept'] = 'application/json; charset=utf-8'
     const response = await axios({
         method: "get",
-        url: 'http://rzhunemogu.ru/RandJSON.aspx?CType=' + contentType,
+        url: `${process.env.JOKES_URL}?CType=${contentType}`,
         responseType: "arraybuffer",
         responseEncoding: 'windows-1251'
     });
@@ -109,15 +109,15 @@ async function getNewJoke(jokes, contentType) {
     const escapedText = escapeXmlCharacters(clearText);
     const ssml = `<speak><prosody volume="x-loud"><lang xml:lang="ru-RU">${escapedText}</lang></prosody></speak>`;
     console.debug('SSML data:', ssml);
-    const Joke = await text2Speech(ssml);
+    const Joke = await text2Speech(ssml, contentType);
 
     const numOfJokes = jokes.push(Joke);
-    console.log('Just added joke #', numOfJokes);
+    console.log(`Just added a joke (${contentType}) #`, numOfJokes);
 }
 
 module.exports.getNewJoke = getNewJoke;
 
-async function text2Speech(jokeText) {
+async function text2Speech(jokeText, contentType) {
     console.debug('Transcode joke: ', jokeText);
     const client = new PollyClient({region: 'eu-central-1'});
     const command = new StartSpeechSynthesisTaskCommand({
@@ -126,7 +126,7 @@ async function text2Speech(jokeText) {
         Text: jokeText,
         TextType: 'ssml',
         OutputS3BucketName: process.env.S3_PERSISTENCE_BUCKET,
-        OutputS3KeyPrefix: '',
+        OutputS3KeyPrefix: contentType,
         VoiceId: "Tatyana"
     });
 

@@ -16,7 +16,14 @@
           "runtime": "nodejs14.x",
           "handler": "index.handler",
           "templatePath": "./infrastructure/cfn-deployer/skill-stack.yaml",
-          "awsRegion": "eu-central-1"
+          "awsRegion": "eu-central-1",
+          "cfn": {
+            "parameters": {
+              "JokesBucketName": "alexa-jokes-bucket",
+              "JokeAudioUrlExpirationTimeInMinutes": 2,
+              "JokesSupplierUrl": "http://rzhunemogu.ru/RandJSON.aspx"
+            }
+          }
         }
       }
     }
