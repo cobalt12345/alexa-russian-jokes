@@ -25,8 +25,8 @@ module.exports.getS3PreSignedUrl = function getS3PreSignedUrl(s3ObjectKey) {
 
 }
 
-async function getFunnyContent (contentType = '1') {
-    axios.defaults.headers.get['Accept'] = 'application/json; charset=utf-8'
+async function getFunnyContent (contentType = 1) {
+    axios.defaults.headers.get['Accept'] = 'application/json; charset=utf-8';
     const response = await axios({
         method: "get",
         url: `${process.env.JOKES_URL}?CType=${contentType}`,
@@ -101,6 +101,7 @@ class Joke {
 module.exports.Joke = Joke;
 
 async function getNewJoke(jokes, contentType) {
+    console.debug('Get new joke: ' + ContentType.valueOf[contentType] + '/' + contentType);
     const content = await getFunnyContent(contentType);
     console.debug('Funny content: ', content);
     const cleanedContent = removeNoiseCharacters(content);
@@ -112,13 +113,14 @@ async function getNewJoke(jokes, contentType) {
     const Joke = await text2Speech(ssml, contentType);
 
     const numOfJokes = jokes.push(Joke);
-    console.log(`Just added a joke (${contentType}) #`, numOfJokes);
+    console.log(`Just added a joke (${ContentType.valueOf[contentType]}/${contentType}) #`, numOfJokes);
 }
 
 module.exports.getNewJoke = getNewJoke;
 
 async function text2Speech(jokeText, contentType) {
-    console.debug('Transcode joke: ', jokeText);
+    const s3Prefix = `${ContentType.valueOf(contentType)}/joke`;
+    console.debug(`Transcode a joke: ${jokeText}. S3 prefix: ${s3Prefix}`);
     const client = new PollyClient({region: 'eu-central-1'});
     const command = new StartSpeechSynthesisTaskCommand({
         Engine: 'standard',
@@ -126,7 +128,7 @@ async function text2Speech(jokeText, contentType) {
         Text: jokeText,
         TextType: 'ssml',
         OutputS3BucketName: process.env.S3_PERSISTENCE_BUCKET,
-        OutputS3KeyPrefix: contentType,
+        OutputS3KeyPrefix: s3Prefix,
         VoiceId: "Tatyana"
     });
 
@@ -135,3 +137,23 @@ async function text2Speech(jokeText, contentType) {
 
     return new Joke(jokeText, response.SynthesisTask.OutputUri);
 }
+
+const ContentType = {
+    'ANECDOTES': 1,
+    'APHORISMS': 4,
+    'ADULTS': 11,
+    valueOf(num) {
+        switch (num) {
+            case 1:
+                return 'ANECDOTES';
+            case 4:
+                return 'APHORISMS';
+            case 11:
+                return 'ADULTS';
+            default:
+                throw new Error(`Unknown ContentType: ${num}`);
+        }
+    }
+}
+
+module.exports.ContentType = ContentType;

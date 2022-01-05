@@ -7,14 +7,7 @@
 const Alexa = require('ask-sdk-core');
 const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
 const {escapeXmlCharacters} = require("ask-sdk-core");
-const {getS3PreSignedUrl, LocalizationInterceptor, getNewJoke} = require('./util');
-
-
-const ContentType = {
-    'ANECDOTES': 1,
-    'APHORISMS': 4,
-    'ADULTS': 11
-}
+const {getS3PreSignedUrl, LocalizationInterceptor, getNewJoke, ContentType} = require('./util');
 
 const PersistAttributes = {
     jokes: {
@@ -23,7 +16,7 @@ const PersistAttributes = {
         [ContentType.ADULTS]: []
     },
     skillCalledFirstTime: true,
-    //1 - anecdotes, 2 - aphorisms, 3 - adults content
+    //1 - anecdotes, 4 - aphorisms, 11 - adults content
     contentType: 1
 };
 
@@ -36,13 +29,13 @@ const ChangeContentTypeHandler = {
         const contentType = handlerInput.requestEnvelope.request.intent.slots.contentType.resolutions
             .resolutionsPerAuthority[0].values[0].value.id;
 
-        console.debug('Set content type to ', contentType);
+        console.debug('Set content type to ', contentType + '/' + ContentType[contentType]);
 
         if (contentType) {
-            const persistentAttributes = await handlerInput.attributesManager.getPersistentAttributes(true,
-                PersistAttributes);
+            const persistentAttributes = await handlerInput.attributesManager.getPersistentAttributes();
 
             persistentAttributes.contentType = ContentType[contentType];
+            console.debug('Persisted attributes: ', persistentAttributes);
             handlerInput.attributesManager.setPersistentAttributes(persistentAttributes);
             handlerInput.attributesManager.savePersistentAttributes();
 
@@ -50,7 +43,7 @@ const ChangeContentTypeHandler = {
             const speech = handlerInput.t('MESSAGE_CHOSEN_CONTENT_TYPE',
                 {contentType: handlerInput.t('CONTENT_TYPE_' + contentType)});
 
-            return handlerInput.responseBuilder.speak(speech).withShouldEndSession(false).getResponse();
+            return handlerInput.responseBuilder.speak(speech).withShouldEndSession(true).getResponse();
         }
 
     }
@@ -70,9 +63,9 @@ const LaunchRequestHandler = {
     },
 
     async handle(handlerInput) {
-        const persistentAttributes = await handlerInput.attributesManager.getPersistentAttributes(true,
-            PersistAttributes);
+        const persistentAttributes = handlerInput.attributesManager.getPersistentAttributes();
 
+        console.debug('Launch Request - persistent attributes: ', persistentAttributes);
         if (persistentAttributes.skillCalledFirstTime) {
             persistentAttributes.skillCalledFirstTime = false;
             handlerInput.attributesManager.setPersistentAttributes(persistentAttributes);
@@ -96,9 +89,11 @@ const LaunchRequestHandler = {
             } else {
                 const joke = reqAttributes['nextJoke'];
                 console.debug('---', 'Next joke:', joke);
-                const mp3S3ObjKey = Array.from(joke.audioFileUri.split('/')).pop();
-                console.debug('---', 'Object key: ' + mp3S3ObjKey);
-                const audioUri = getS3PreSignedUrl(mp3S3ObjKey);
+                const uriParts = Array.from(joke.audioFileUri.split('/'));
+                const mp3S3ObjKey = uriParts.pop();
+                const mp3S3ObjPrefix = uriParts.pop();
+                console.debug('---', `Prefix: ${mp3S3ObjPrefix} Object key: ${mp3S3ObjKey}`);
+                const audioUri = getS3PreSignedUrl(`${mp3S3ObjPrefix}/${mp3S3ObjKey}`);
                 const escapedAudioUri = escapeXmlCharacters(audioUri);
                 console.debug('---', 'Pre-signed URL: ', audioUri);
                 console.debug('---', 'Escaped URL: ', escapedAudioUri)
@@ -218,18 +213,21 @@ const InitJokes = {
         try {
             console.debug(JSON.stringify(handlerInput.requestEnvelope));
             const attributesManager = handlerInput.attributesManager;
-            let persistentAttributes = await attributesManager.getPersistentAttributes(true, PersistAttributes);
+            let persistentAttributes = {...PersistAttributes, ...await attributesManager.getPersistentAttributes()};
+            console.debug('Init jokes - persistent attributes: ', persistentAttributes);
             if (persistentAttributes.skillCalledFirstTime) {
                 for (let contentType in ContentType) {
-                    const contentTypeNum = ContentType[contentType];
-                    var getNumOfJokes = 5;
-                    console.log(`Get ${getNumOfJokes} jokes of kind ${contentType}(${contentTypeNum})`);
-                    while (getNumOfJokes-- > 0) {
-                        getNewJoke(persistentAttributes.jokes[contentTypeNum], contentTypeNum).then(() => {
-                            attributesManager.setPersistentAttributes(persistentAttributes);
-                            attributesManager.savePersistentAttributes().then(() => console.log('Attributes persisted'),
-                                reason => console.error('Persist attributes failed', reason)).catch(console.error);
-                        }).catch(console.warn);
+                    if (typeof ContentType[contentType] === 'number') {
+                        const contentTypeNum = ContentType[contentType];
+                        var getNumOfJokes = 5;
+                        console.debug(`Get ${getNumOfJokes} jokes of kind ${contentType}(${contentTypeNum})`);
+                        while (getNumOfJokes-- > 0) {
+                            await getNewJoke(persistentAttributes.jokes[contentTypeNum], contentTypeNum).then(async () => {
+                                await attributesManager.setPersistentAttributes(persistentAttributes);
+                                await attributesManager.savePersistentAttributes().then(() => console.log('Attributes persisted'),
+                                    reason => console.error('Persist attributes failed', reason)).catch(console.error);
+                            }).catch(console.warn);
+                        }
                     }
                 }
             } else {

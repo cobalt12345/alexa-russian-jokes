@@ -5,6 +5,33 @@
       "skillInfrastructure": {
         "@ask-cli/lambda-deployer": {
           "deployState": {}
+        },
+        "@ask-cli/cfn-deployer": {
+          "deployState": {
+            "default": {
+              "s3": {
+                "bucket": "ask-alexa-russian-jokes-default-eucentral1-1640808990968",
+                "key": "endpoint/build.zip"
+              },
+              "stackId": "arn:aws:cloudformation:eu-central-1:785668202743:stack/ask-RussianJokes-default-skillStack-1640808990968/3e791e80-68e4-11ec-9efd-0af784617406",
+              "outputs": [
+                {
+                  "OutputKey": "SkillEndpoint",
+                  "OutputValue": "arn:aws:lambda:eu-central-1:785668202743:function:ask-RussianJokes-default-s-AlexaJokerSkillFunction-vdYX0kWkcvMX",
+                  "Description": "LambdaARN for the regional endpoint"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "skillId": "amzn1.ask.skill.38d3b9c5-e5c6-4849-8078-e9e331197a3a",
+      "skillMetadata": {
+        "lastDeployHash": "TIPmts2UyPV2ZmeydYQITZ2p5tQ="
+      },
+      "code": {
+        "default": {
+          "lastDeployHash": "iEh3RLULMnQMCtjjj5d4BjsjQGs="
         }
       }
     }

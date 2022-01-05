@@ -24,6 +24,7 @@
                         }
                     ],
                     "samples": [
+                        "{contentType}",
                         "i prefer {contentType}",
                         "i like {contentType}",
                         "i would like to listen {contentType}",

@@ -1,50 +1,120 @@
 // This sample demonstrates handling intents from an Alexa skill using the Alexa Skills Kit SDK (v2).
 // Please visit https://alexa.design/cookbook for additional examples on implementing slots, dialog management,
 // session persistence, api calls, and more.
+
+'use strict';
+
 const Alexa = require('ask-sdk-core');
 const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
 const {escapeXmlCharacters} = require("ask-sdk-core");
-const axios = require('axios').default;
-const { PollyClient, StartSpeechSynthesisTaskCommand } = require("@aws-sdk/client-polly");
-const {getS3PreSignedUrl} = require('./util');
-const { Buffer } = require('buffer');
+const {getS3PreSignedUrl, LocalizationInterceptor, getNewJoke, ContentType} = require('./util');
 
-const THERE_ARE_NO_JOKES_YET = [
-    'Humor is not my strong skill.',
-    'I\'m too serious for jokes.',
-    'I don\'t know any jokes.',
-    'Ha-ha-ha...',
-    'Russians are too serious to joke!',
-];
-const LaunchRequestHandler = {
+const PersistAttributes = {
+    jokes: {
+        [ContentType.ANECDOTES]: [],
+        [ContentType.APHORISMS]: [],
+        [ContentType.ADULTS]: []
+    },
+    skillCalledFirstTime: true,
+    //1 - anecdotes, 4 - aphorisms, 11 - adults content
+    contentType: 1
+};
+
+const ChangeContentTypeHandler = {
     canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'ChangeContentTypeIntent';
+    },
+    async handle(handlerInput) {
+        const contentType = handlerInput.requestEnvelope.request.intent.slots.contentType.resolutions
+            .resolutionsPerAuthority[0].values[0].value.id;
+
+        console.debug('Set content type to ', contentType + '/' + ContentType[contentType]);
+
+        if (contentType) {
+            const persistentAttributes = await handlerInput.attributesManager.getPersistentAttributes();
+
+            persistentAttributes.contentType = ContentType[contentType];
+            console.debug('Persisted attributes: ', persistentAttributes);
+            handlerInput.attributesManager.setPersistentAttributes(persistentAttributes);
+            handlerInput.attributesManager.savePersistentAttributes();
+
+
+            const speech = handlerInput.t('MESSAGE_CHOSEN_CONTENT_TYPE',
+                {contentType: handlerInput.t('CONTENT_TYPE_' + contentType)});
+
+            return handlerInput.responseBuilder.speak(speech).withShouldEndSession(true).getResponse();
+        }
+
+    }
+}
+
+const LaunchRequestHandler = {
+    THERE_ARE_NO_JOKES_YET: [],
+
+    canHandle(handlerInput) {
+        this.THERE_ARE_NO_JOKES_YET.push(handlerInput.t('ERROR_MSG_HUMOR_ISNT_STRONG'));
+        this.THERE_ARE_NO_JOKES_YET.push(handlerInput.t('ERROR_MSG_TOO_SERIOUS'));
+        this.THERE_ARE_NO_JOKES_YET.push(handlerInput.t('ERROR_MSG_DONT_KNOW_JOKES'));
+        this.THERE_ARE_NO_JOKES_YET.push(handlerInput.t('ERROR_MSG_HA_HA_HA'));
+        this.THERE_ARE_NO_JOKES_YET.push(handlerInput.t('ERROR_MSG_SERIOUS_RUSSIANS'));
+
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
     },
-    handle(handlerInput) {
-        const reqAttributes = handlerInput.attributesManager.getRequestAttributes();
-        console.log('Launch', reqAttributes);
-        if (!reqAttributes || !(reqAttributes['nextJoke'])) {
-            const noSelectedJoke = THERE_ARE_NO_JOKES_YET[getRandomInt(0, THERE_ARE_NO_JOKES_YET.length - 1)];
 
-            return handlerInput.responseBuilder
-                .speak(noSelectedJoke)
-                .getResponse();
+    async handle(handlerInput) {
+        const persistentAttributes = handlerInput.attributesManager.getPersistentAttributes();
+
+        console.debug('Launch Request - persistent attributes: ', persistentAttributes);
+        if (persistentAttributes.skillCalledFirstTime) {
+            persistentAttributes.skillCalledFirstTime = false;
+            handlerInput.attributesManager.setPersistentAttributes(persistentAttributes);
+            handlerInput.attributesManager.savePersistentAttributes();
+
+            const welcomeSpeach = handlerInput.t('MESSAGE_WELCOME');
+
+            return handlerInput.responseBuilder.speak(welcomeSpeach).reprompt(welcomeSpeach)
+                .withShouldEndSession(false).getResponse();
 
         } else {
-            const joke = reqAttributes['nextJoke'];
-            console.debug('---', 'Next joke:', joke);
-            const mp3S3ObjKey = Array.from(joke.audioFileUri.split('/')).pop();
-            console.debug('---', 'Object key: ' + mp3S3ObjKey);
-            const audioUri = getS3PreSignedUrl(mp3S3ObjKey);
-            const escapedAudioUri = escapeXmlCharacters(audioUri);
-            console.debug('---', 'Pre-signed URL: ', audioUri);
-            console.debug('---', 'Escaped URL: ', escapedAudioUri)
+            const reqAttributes = handlerInput.attributesManager.getRequestAttributes();
+            console.log('Launch', reqAttributes);
+            if (!reqAttributes || !(reqAttributes['nextJoke'])) {
+                const noSelectedJoke = this.THERE_ARE_NO_JOKES_YET[getRandomInt(0, this.THERE_ARE_NO_JOKES_YET.length - 1)];
 
-            return handlerInput.responseBuilder.speak(`<audio src="${escapedAudioUri}" />`).getResponse();
+                return handlerInput.responseBuilder
+                    .speak(noSelectedJoke)
+                    .getResponse();
+
+            } else {
+                const joke = reqAttributes['nextJoke'];
+                console.debug('---', 'Next joke:', joke);
+                const uriParts = Array.from(joke.audioFileUri.split('/'));
+                const mp3S3ObjKey = uriParts.pop();
+                const mp3S3ObjPrefix = uriParts.pop();
+                console.debug('---', `Prefix: ${mp3S3ObjPrefix} Object key: ${mp3S3ObjKey}`);
+                const audioUri = getS3PreSignedUrl(`${mp3S3ObjPrefix}/${mp3S3ObjKey}`);
+                const escapedAudioUri = escapeXmlCharacters(audioUri);
+                console.debug('---', 'Pre-signed URL: ', audioUri);
+                console.debug('---', 'Escaped URL: ', escapedAudioUri)
+
+                return handlerInput.responseBuilder.speak(`<audio src="${escapedAudioUri}" />`)
+                    .withShouldEndSession(false).getResponse();
+            }
         }
 
     }
 };
+
+const NextJokeHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'NextJokeIntent';
+    },
+    handle(handlerInput) {
+        return LaunchRequestHandler.handle(handlerInput);
+    }
+}
 
 const HelpIntentHandler = {
     canHandle(handlerInput) {
@@ -52,7 +122,7 @@ const HelpIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.HelpIntent';
     },
     handle(handlerInput) {
-        const speakOutput = 'You can say hello to me! How can I help?';
+        const speakOutput = handlerInput.t('MESSAGE_HELP');
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -60,6 +130,7 @@ const HelpIntentHandler = {
             .getResponse();
     }
 };
+
 const CancelAndStopIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -67,7 +138,7 @@ const CancelAndStopIntentHandler = {
                 || Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.StopIntent');
     },
     handle(handlerInput) {
-        const speakOutput = 'Goodbye!';
+        const speakOutput = handlerInput.t('MESSAGE_GOODBYE');
         return handlerInput.responseBuilder
             .speak(speakOutput)
             .getResponse();
@@ -111,7 +182,7 @@ const ErrorHandler = {
     },
     handle(handlerInput, error) {
         console.log(`~~~~ Error handled: ${error.stack}`);
-        const speakOutput = `Sorry, I had trouble doing what you asked. Please try again.`;
+        const speakOutput = handlerInput.t('ERROR_MSG_TRY_LATER');
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -137,78 +208,50 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-async function text2Speech(jokeText) {
-    console.debug('Transcode joke: ', jokeText);
-    const client = new PollyClient({region: 'eu-west-1'});
-    const command = new StartSpeechSynthesisTaskCommand({
-        Engine: 'standard',
-        OutputFormat: 'mp3',
-        Text: jokeText,
-        TextType: 'ssml',
-        OutputS3BucketName: process.env.S3_PERSISTENCE_BUCKET,
-        OutputS3KeyPrefix: '',
-        VoiceId: "Tatyana"
-    });
-
-    const response = await client.send(command);
-    console.debug('Synth. speech task response:', JSON.stringify(response));
-
-    return new Joke(jokeText, response.SynthesisTask.OutputUri);
-}
-
-
-class Joke {
-    constructor(text, audioFileUri) {
-        this.text = text;
-        this.audioFileUri = audioFileUri;
-    }
-}
-
 const InitJokes = {
     async process(handlerInput) {
         try {
             console.debug(JSON.stringify(handlerInput.requestEnvelope));
-            axios.defaults.headers.get['Accept'] = 'application/json; charset=utf-8'
-            const response = await axios({
-                method: "get",
-                url: 'http://rzhunemogu.ru/RandJSON.aspx?CType=1',
-                responseType: "arraybuffer",
-                responseEncoding: 'windows-1251'
-            });
-            // console.log('Response type:', typeof (response), 'Data type:', typeof (response.data));
-            // console.log('Response:', response.toString());
-            // console.log('Data:', response.data.toString());
-
-            const data = response.data;
-            console.debug('Raw data:', data.toString());
-            const textDecoder = new TextDecoder('windows-1251');
-            const winDecodedResponse = textDecoder.decode(data);
-            const textEncoder = new TextEncoder();
-            const utfEncodedResponse = Buffer.from(textEncoder.encode(winDecodedResponse).buffer).toString();
-            const clearText = JSON.parse(utfEncodedResponse.replace(/(?:\\[rn]|[\r\n]|[-])/g, ''))['content'];
-            const escapedText = escapeXmlCharacters(clearText);
-            const ssml = `<speak><lang xml:lang="ru-RU">${escapedText}</lang></speak>`;
-            console.debug('SSML data:', ssml);
-            const Joke = await text2Speech(ssml);
             const attributesManager = handlerInput.attributesManager;
-            let persistentAttributes = await attributesManager.getPersistentAttributes(true, {jokes: []});
-            const numOfJokes = persistentAttributes.jokes.push(Joke);
-            console.log('Just added joke #', numOfJokes);
-            attributesManager.setPersistentAttributes(persistentAttributes);
-            const RandomJoke = {
-                nextJoke: persistentAttributes.jokes.length > 1 ?
-                    getRandomJoke(persistentAttributes.jokes) :
-                    (()=>{
-                        console.log('First joke - audio probably not yet ready.');
+            let persistentAttributes = {...PersistAttributes, ...await attributesManager.getPersistentAttributes()};
+            console.debug('Init jokes - persistent attributes: ', persistentAttributes);
+            if (persistentAttributes.skillCalledFirstTime) {
+                for (let contentType in ContentType) {
+                    if (typeof ContentType[contentType] === 'number') {
+                        const contentTypeNum = ContentType[contentType];
+                        var getNumOfJokes = 5;
+                        console.debug(`Get ${getNumOfJokes} jokes of kind ${contentType}(${contentTypeNum})`);
+                        while (getNumOfJokes-- > 0) {
+                            await getNewJoke(persistentAttributes.jokes[contentTypeNum], contentTypeNum).then(async () => {
+                                await attributesManager.setPersistentAttributes(persistentAttributes);
+                                await attributesManager.savePersistentAttributes().then(() => console.log('Attributes persisted'),
+                                    reason => console.error('Persist attributes failed', reason)).catch(console.error);
+                            }).catch(console.warn);
+                        }
+                    }
+                }
+            } else {
+                await getNewJoke(persistentAttributes.jokes[persistentAttributes.contentType],
+                    persistentAttributes.contentType);
 
-                        return null;
-                    })()
+                attributesManager.setPersistentAttributes(persistentAttributes);
+                attributesManager.savePersistentAttributes().then(() => console.log('Attributes persisted'),
+                    reason => console.error('Persist attributes failed', reason)).catch(console.error);
+            }
+
+
+            const RandomJoke = {
+                nextJoke: !persistentAttributes.skillCalledFirstTime
+                    && persistentAttributes.jokes[persistentAttributes.contentType].length > 1 ?
+                        getRandomJoke(persistentAttributes.jokes[persistentAttributes.contentType]) :
+                            (()=>{
+                                console.log('First joke - audio probably not yet ready.');
+
+                                return null;
+                            })()
             };
             console.log('Random joke:', RandomJoke);
             attributesManager.setRequestAttributes(RandomJoke);
-            attributesManager.savePersistentAttributes().then(() => console.log('Attributes persisted'),
-                reason => console.error('Persist attributes failed', reason)).catch(console.error);
-
         } catch(error) {
             console.warn('New joke failed', error);
         }
@@ -223,11 +266,14 @@ exports.handler = Alexa.SkillBuilders.custom()
         new persistenceAdapter.S3PersistenceAdapter({bucketName:process.env.S3_PERSISTENCE_BUCKET})
     )
     .addRequestInterceptors(
+        LocalizationInterceptor,
         InitJokes
     )
     .addRequestHandlers(
         LaunchRequestHandler,
+        ChangeContentTypeHandler,
         HelpIntentHandler,
+        NextJokeHandler,
         CancelAndStopIntentHandler,
         SessionEndedRequestHandler,
         IntentReflectorHandler, // make sure IntentReflectorHandler is last so it doesn't override your custom intent handlers

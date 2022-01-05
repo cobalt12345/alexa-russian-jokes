@@ -2,12 +2,19 @@
   "manifest": {
     "apis": {
       "custom": {
+        "endpoint": {
+          "uri": "arn:aws:lambda:eu-central-1:785668202743:function:ask-RussianJokes-default-s-AlexaJokerSkillFunction-vdYX0kWkcvMX"
+        }
       }
     },
     "manifestVersion": "1.0",
     "publishingInformation": {
       "category": "GAMES",
-      "distributionCountries": ["US", "GB", "DE"],
+      "distributionCountries": [
+        "US",
+        "GB",
+        "DE"
+      ],
       "isAvailableWorldwide": false,
       "locales": {
         "en-US": {
