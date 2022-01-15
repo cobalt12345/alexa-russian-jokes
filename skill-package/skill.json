@@ -8,37 +8,78 @@
       }
     },
     "manifestVersion": "1.0",
+    "privacyAndCompliance": {
+      "allowsPurchases": false,
+      "containsAds": false,
+      "isChildDirected": false,
+      "isExportCompliant": true,
+      "locales": {
+        "en-US": {},
+        "de-DE": {}
+      },
+      "usesPersonalInfo": false
+    },
     "publishingInformation": {
+      "automaticDistribution": {
+        "isActive": true,
+        "sourceLocaleForLanguages": [
+          {
+            "language": "de",
+            "sourceLocale": "de-DE"
+          },
+          {
+            "language": "en",
+            "sourceLocale": "en-US"
+          }
+        ]
+      },
       "category": "GAMES",
-      "distributionCountries": [
-        "US",
-        "GB",
-        "DE"
-      ],
-      "isAvailableWorldwide": false,
+      "distributionCountries": [],
+      "distributionMode": "PUBLIC",
+      "isAvailableWorldwide": true,
       "locales": {
         "en-US": {
-          "description": "Alexa tells jokes in Russian language.",
+          "description": "Alexa tells jokes in Russian language. You may tell Alexa what kind of jokes you prefer - anecdotes, aphorisms, or adult jokes!",
           "examplePhrases": [
             "Alexa, open Russian jokes"
           ],
-          "largeIconUri": "file://assets/en-US_largeIcon.png",
+          "keywords": [
+            "russian",
+            "joke",
+            "jokes",
+            "foreign",
+            "language",
+            "anecdote",
+            "anecdotes",
+            "aphorism",
+            "aphorisms"
+          ],
+          "largeIconUri": "***REMOVED***",
           "name": "Russian Jokes",
-          "smallIconUri": "file://assets/en-US_smallIcon.png",
-          "summary": "Do you want to listen jokes in Russian language? This skill is for you!"
+          "smallIconUri": "***REMOVED***",
+          "summary": "Do you want to listen jokes in Russian language? This skill is for you!",
+          "updatesDescription": "Current update fixes an issue in the selection of joke type where Alexa could ignore user preference."
         },
         "de-DE": {
-          "description": "Alexa erzählt Witze in russischer Sprache.",
+          "description": "Alexa erzählt Witze in russischer Sprache. Sie können Alexa sagen, welche Art von Witzen Sie bevorzugen – Anekdoten, Aphorismen oder Witze für Erwachsene!",
           "examplePhrases": [
             "Alexa, öffne russische Witze"
           ],
-          "largeIconUri": "file://assets/en-US_largeIcon.png",
+          "keywords": [
+            "scherz",
+            "witze",
+            "anekdot",
+            "russisch",
+            "spaß"
+          ],
+          "largeIconUri": "***REMOVED***",
           "name": "Russische Witze",
-          "smallIconUri": "file://assets/en-US_smallIcon.png",
-          "summary": "Möchten Sie Witze in russischer Sprache hören? Diese Fähigkeit ist für Sie!"
+          "smallIconUri": "***REMOVED***",
+          "summary": "Möchten Sie Witze in russischer Sprache hören? Diese Fähigkeit ist für Sie!",
+          "updatesDescription": "Das aktuelle Update behebt ein Problem bei der Auswahl des Witztyps, bei dem Alexa die Benutzereinstellung ignorieren konnte."
         }
       },
-      "testingInstructions": "Simply say 'Alexa, open Russian jokes' and enjoy jokes from Mother-Russia."
+      "testingInstructions": "Simply say 'Alexa, open Russian jokes', do initial settings, and enjoy jokes from Mother-Russia."
     }
   }
 }
