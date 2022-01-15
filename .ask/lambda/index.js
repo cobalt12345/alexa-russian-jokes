@@ -26,12 +26,13 @@ const ChangeContentTypeHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'ChangeContentTypeIntent';
     },
     async handle(handlerInput) {
-        const contentType = handlerInput.requestEnvelope.request.intent.slots.contentType.resolutions
-            .resolutionsPerAuthority[0].values[0].value.id;
+        if ('ER_SUCCESS_MATCH' === handlerInput.requestEnvelope.request.intent.slots.contentType.resolutions
+                .resolutionsPerAuthority[0].status.code) {
 
-        console.debug('Set content type to ', contentType + '/' + ContentType[contentType]);
+            const contentType = handlerInput.requestEnvelope.request.intent.slots.contentType.resolutions
+                .resolutionsPerAuthority[0].values[0].value.id;
 
-        if (contentType) {
+            console.debug('Set content type to ', contentType + '/' + ContentType[contentType]);
             const persistentAttributes = await handlerInput.attributesManager.getPersistentAttributes();
 
             persistentAttributes.contentType = ContentType[contentType];
@@ -44,6 +45,11 @@ const ChangeContentTypeHandler = {
                 {contentType: handlerInput.t('CONTENT_TYPE_' + contentType)});
 
             return handlerInput.responseBuilder.speak(speech).withShouldEndSession(true).getResponse();
+        } else {
+            const unknownContentType = handlerInput.t('ERROR_UNKNOWN_CONTENT_TYPE');
+
+            return handlerInput.responseBuilder.speak(unknownContentType)
+                    .reprompt(handlerInput.t('MESSAGE_WELCOME')).withShouldEndSession(false).getResponse();
         }
 
     }
@@ -63,7 +69,7 @@ const LaunchRequestHandler = {
     },
 
     async handle(handlerInput) {
-        const persistentAttributes = handlerInput.attributesManager.getPersistentAttributes();
+        const persistentAttributes = await handlerInput.attributesManager.getPersistentAttributes();
 
         console.debug('Launch Request - persistent attributes: ', persistentAttributes);
         if (persistentAttributes.skillCalledFirstTime) {
@@ -210,50 +216,56 @@ function getRandomInt(min, max) {
 
 const InitJokes = {
     async process(handlerInput) {
-        try {
-            console.debug(JSON.stringify(handlerInput.requestEnvelope));
-            const attributesManager = handlerInput.attributesManager;
-            let persistentAttributes = {...PersistAttributes, ...await attributesManager.getPersistentAttributes()};
-            console.debug('Init jokes - persistent attributes: ', persistentAttributes);
-            if (persistentAttributes.skillCalledFirstTime) {
-                for (let contentType in ContentType) {
-                    if (typeof ContentType[contentType] === 'number') {
-                        const contentTypeNum = ContentType[contentType];
-                        var getNumOfJokes = 5;
-                        console.debug(`Get ${getNumOfJokes} jokes of kind ${contentType}(${contentTypeNum})`);
-                        while (getNumOfJokes-- > 0) {
-                            await getNewJoke(persistentAttributes.jokes[contentTypeNum], contentTypeNum).then(async () => {
-                                await attributesManager.setPersistentAttributes(persistentAttributes);
-                                await attributesManager.savePersistentAttributes().then(() => console.log('Attributes persisted'),
-                                    reason => console.error('Persist attributes failed', reason)).catch(console.error);
-                            }).catch(console.warn);
+        console.debug(JSON.stringify(handlerInput.requestEnvelope));
+        const requestType = Alexa.getRequestType(handlerInput.requestEnvelope);
+        if (requestType === 'LaunchRequest'
+            || (requestType === 'IntentRequest' && Alexa.getIntentName(handlerInput.requestEnvelope) !== 'ChangeContentTypeIntent')) {
+            try {
+                const attributesManager = handlerInput.attributesManager;
+                let persistentAttributes = {...PersistAttributes, ...await attributesManager.getPersistentAttributes()};
+                console.debug('Init jokes - persistent attributes: ', persistentAttributes);
+                if (persistentAttributes.skillCalledFirstTime) {
+                    for (let contentType in ContentType) {
+                        if (typeof ContentType[contentType] === 'number') {
+                            const contentTypeNum = ContentType[contentType];
+                            var getNumOfJokes = 5;
+                            console.debug(`Get ${getNumOfJokes} jokes of kind ${contentType}(${contentTypeNum})`);
+                            while (getNumOfJokes-- > 0) {
+                                await getNewJoke(persistentAttributes.jokes[contentTypeNum], contentTypeNum).then(async () => {
+                                    await attributesManager.setPersistentAttributes(persistentAttributes);
+                                    await attributesManager.savePersistentAttributes().then(() => console.log('Attributes persisted'),
+                                        reason => console.error('Persist attributes failed', reason)).catch(console.error);
+                                }).catch(console.warn);
+                            }
                         }
                     }
+                } else {
+                    await getNewJoke(persistentAttributes.jokes[persistentAttributes.contentType],
+                        persistentAttributes.contentType);
+
+                    attributesManager.setPersistentAttributes(persistentAttributes);
+                    attributesManager.savePersistentAttributes().then(() => console.log('Attributes persisted'),
+                        reason => console.error('Persist attributes failed', reason)).catch(console.error);
                 }
-            } else {
-                await getNewJoke(persistentAttributes.jokes[persistentAttributes.contentType],
-                    persistentAttributes.contentType);
-
-                attributesManager.setPersistentAttributes(persistentAttributes);
-                attributesManager.savePersistentAttributes().then(() => console.log('Attributes persisted'),
-                    reason => console.error('Persist attributes failed', reason)).catch(console.error);
-            }
 
 
-            const RandomJoke = {
-                nextJoke: !persistentAttributes.skillCalledFirstTime
+                const RandomJoke = {
+                    nextJoke: !persistentAttributes.skillCalledFirstTime
                     && persistentAttributes.jokes[persistentAttributes.contentType].length > 1 ?
                         getRandomJoke(persistentAttributes.jokes[persistentAttributes.contentType]) :
-                            (()=>{
-                                console.log('First joke - audio probably not yet ready.');
+                        (() => {
+                            console.log('First joke - audio probably not yet ready.');
 
-                                return null;
-                            })()
-            };
-            console.log('Random joke:', RandomJoke);
-            attributesManager.setRequestAttributes(RandomJoke);
-        } catch(error) {
-            console.warn('New joke failed', error);
+                            return null;
+                        })()
+                };
+                console.log('Random joke:', RandomJoke);
+                attributesManager.setRequestAttributes(RandomJoke);
+            } catch (error) {
+                console.warn('New joke failed', error);
+            }
+        } else {
+            console.debug('Don\'t prepare joke to avoid persistent attributes re-writing');
         }
     }
 }

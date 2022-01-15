@@ -15,7 +15,8 @@ module.exports = {
             MESSAGE_CHOSEN_CONTENT_TYPE: 'From this moment, I am going to tell you {{contentType}}.',
             CONTENT_TYPE_ANECDOTES: 'anecdotes',
             CONTENT_TYPE_APHORISMS: 'aphorisms',
-            CONTENT_TYPE_ADULTS: 'adult jokes'
+            CONTENT_TYPE_ADULTS: 'adult jokes',
+            ERROR_UNKNOWN_CONTENT_TYPE: 'I don\'t know anything about that. You can choose to receive anecdotes, aphorisms, or adult jokes. What do you prefer?',
         }
     },
     de: {
@@ -34,7 +35,8 @@ module.exports = {
             MESSAGE_CHOSEN_CONTENT_TYPE: 'Von diesem Moment an werde ich Ihnen {{contentType}} sagen.',
             CONTENT_TYPE_ANECDOTES: 'Anekdoten',
             CONTENT_TYPE_APHORISMS: 'Aphorismen',
-            CONTENT_TYPE_ADULTS: 'Witze für Erwachsene'
+            CONTENT_TYPE_ADULTS: 'Witze für Erwachsene',
+            ERROR_UNKNOWN_CONTENT_TYPE: 'Ich weiß nichts darüber. Sie können wählen, ob Sie Anekdoten, Aphorismen oder Witze für Erwachsene erhalten möchten. Was bevorzugen Sie?',
         }
     }
 }

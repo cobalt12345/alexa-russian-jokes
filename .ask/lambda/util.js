@@ -7,6 +7,26 @@ const i18n = require('i18next');
 const { PollyClient, StartSpeechSynthesisTaskCommand } = require("@aws-sdk/client-polly");
 const {escapeXmlCharacters} = require("ask-sdk-core");
 
+const ContentType = {
+    'ANECDOTES': 1,
+    'APHORISMS': 4,
+    'ADULTS': 11,
+    valueOf(num) {
+        switch (num) {
+            case 1:
+                return 'ANECDOTES';
+            case 4:
+                return 'APHORISMS';
+            case 11:
+                return 'ADULTS';
+            default:
+                throw new Error(`Unknown ContentType: ${num}`);
+        }
+    }
+}
+
+module.exports.ContentType = ContentType;
+
 const s3SigV4Client = new AWS.S3({
     signatureVersion: 'v4'
 });
@@ -101,7 +121,7 @@ class Joke {
 module.exports.Joke = Joke;
 
 async function getNewJoke(jokes, contentType) {
-    console.debug('Get new joke: ' + ContentType.valueOf[contentType] + '/' + contentType);
+    console.debug('Get new joke: ' + ContentType.valueOf(contentType) + '/' + contentType);
     const content = await getFunnyContent(contentType);
     console.debug('Funny content: ', content);
     const cleanedContent = removeNoiseCharacters(content);
@@ -113,7 +133,7 @@ async function getNewJoke(jokes, contentType) {
     const Joke = await text2Speech(ssml, contentType);
 
     const numOfJokes = jokes.push(Joke);
-    console.log(`Just added a joke (${ContentType.valueOf[contentType]}/${contentType}) #`, numOfJokes);
+    console.log(`Just added a joke (${ContentType.valueOf(contentType)}/${contentType}) #`, numOfJokes);
 }
 
 module.exports.getNewJoke = getNewJoke;
@@ -137,23 +157,3 @@ async function text2Speech(jokeText, contentType) {
 
     return new Joke(jokeText, response.SynthesisTask.OutputUri);
 }
-
-const ContentType = {
-    'ANECDOTES': 1,
-    'APHORISMS': 4,
-    'ADULTS': 11,
-    valueOf(num) {
-        switch (num) {
-            case 1:
-                return 'ANECDOTES';
-            case 4:
-                return 'APHORISMS';
-            case 11:
-                return 'ADULTS';
-            default:
-                throw new Error(`Unknown ContentType: ${num}`);
-        }
-    }
-}
-
-module.exports.ContentType = ContentType;
