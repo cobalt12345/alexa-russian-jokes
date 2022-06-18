@@ -54,9 +54,9 @@
             "aphorism",
             "aphorisms"
           ],
-          "largeIconUri": "***REMOVED***",
+          "largeIconUri": "file://assets/en-US_largeIcon.png",
           "name": "Russian Jokes",
-          "smallIconUri": "***REMOVED***",
+          "smallIconUri": "file://assets/en-US_smallIcon.png",
           "summary": "Do you want to listen jokes in Russian language? This skill is for you!",
           "updatesDescription": "Current update fixes an issue in the selection of joke type where Alexa could ignore user preference."
         },
@@ -72,9 +72,9 @@
             "russisch",
             "spaß"
           ],
-          "largeIconUri": "***REMOVED***",
+          "largeIconUri": "file://assets/en-US_largeIcon.png",
           "name": "Russische Witze",
-          "smallIconUri": "***REMOVED***",
+          "smallIconUri": "file://assets/en-US_smallIcon.png",
           "summary": "Möchten Sie Witze in russischer Sprache hören? Diese Fähigkeit ist für Sie!",
           "updatesDescription": "Das aktuelle Update behebt ein Problem bei der Auswahl des Witztyps, bei dem Alexa die Benutzereinstellung ignorieren konnte."
         }
