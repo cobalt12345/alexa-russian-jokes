@@ -11,3 +11,7 @@ Finally alexa plays MP3 using the SSML (Speech Synthesis Markup Language) &lt;au
 
 ## See how it works
 "Russian Jokes" Alexa skill in <a href="https://www.amazon.com/DenTal-Russian-Jokes/dp/B09PHSF1JR/ref=sr_1_1?keywords=russian+jokes&qid=1655519715&s=digital-skills&sr=1-1">Alexa Skills catalog</a>.
+
+## Update: skill was rejected from catalog :(
+
+![Skill Rejection](https://github.com/cobalt12345/alexa-russian-jokes/blob/4c5cb8b2caa4b33b927594bb4cb36e8274178bad/alexa-jokes-skill-reject.png)
